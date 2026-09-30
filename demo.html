@@ -5,7 +5,8 @@
 
     <meta charset="UTF-8" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- FIX: viewport-fit=cover for notched phones -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <title>Demo Frame Screen</title>
 
@@ -20,9 +21,10 @@
 
     <!-- ========================================
          LOTTIE
+         FIX: pinned version + defer
     ======================================== -->
 
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js">
+    <script defer src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js">
     </script>
 
 
@@ -30,6 +32,24 @@
 
 
     <style>
+        /* ========================================
+           VARIABLES
+           Ad keeps 720:250 ratio and fits any phone
+           (portrait = width limit, landscape = height limit)
+        ======================================== */
+
+        :root {
+
+            --ad-h: min(250px, 34.7vw, 28vh);
+
+            --ad-w: calc(var(--ad-h) * 2.88);
+
+            --safe-top: env(safe-area-inset-top, 0px);
+
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+
         /* ========================================
            GLOBAL RESET
         ======================================== */
@@ -43,6 +63,8 @@
 
         html {
             scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
 
@@ -58,25 +80,27 @@
 
 
             /*
-                Top ad overlays the page (no layout push),
-                so padding-top never changes while scrolling.
+                Top ad is hidden on first open
+                and only overlays the page after scrolling,
+                so only small top spacing is needed.
             */
 
             padding-top: 20px;
 
             /*
                 Bottom ad is visible.
+                FIX: follows the real ad height + safe area.
             */
 
-            padding-bottom: 260px;
+            padding-bottom: calc(var(--ad-h) + var(--safe-bottom) + 12px);
 
 
             /* FIX: stop scroll anchoring jumps on mobile */
 
             overflow-anchor: none;
 
+            overflow-x: hidden;
 
-            /* FIX: no padding-top transition anymore */
 
             transition:
                 padding-bottom 0.35s ease;
@@ -103,6 +127,10 @@
             z-index: 9999;
 
             pointer-events: none;
+
+            /* FIX: notch support */
+
+            padding-top: var(--safe-top);
 
             /* FIX: GPU layer */
 
@@ -138,9 +166,9 @@
 
             position: relative;
 
-            width: 720px;
+            width: var(--ad-w);
 
-            height: 250px;
+            height: var(--ad-h);
 
             overflow: hidden;
 
@@ -150,8 +178,6 @@
             background: transparent;
 
             pointer-events: auto;
-
-            box-shadow: none;
         }
 
 
@@ -175,9 +201,6 @@
 
             box-shadow:
                 0 6px 30px rgba(0, 0, 0, 0.05);
-
-            transition:
-                margin-top 0.35s ease;
         }
 
 
@@ -188,6 +211,8 @@
             line-height: 1.4;
 
             margin-bottom: 24px;
+
+            overflow-wrap: anywhere;
         }
 
 
@@ -196,6 +221,8 @@
             display: block;
 
             width: 100%;
+
+            height: auto;
 
             border-radius: 18px;
 
@@ -208,6 +235,8 @@
             margin-bottom: 20px;
 
             font-size: 17px;
+
+            overflow-wrap: anywhere;
         }
 
 
@@ -219,7 +248,9 @@
 
             position: fixed;
 
-            bottom: -0.8rem;
+            /* FIX: was -0.8rem (cropped the ad) */
+
+            bottom: 0;
 
             left: 0;
 
@@ -232,6 +263,10 @@
             z-index: 9999;
 
             pointer-events: none;
+
+            /* FIX: home indicator support */
+
+            padding-bottom: var(--safe-bottom);
 
             /* FIX: GPU layer */
 
@@ -267,9 +302,9 @@
 
             position: relative;
 
-            width: 720px;
+            width: var(--ad-w);
 
-            height: 250px;
+            height: var(--ad-h);
 
             overflow: hidden;
 
@@ -279,8 +314,6 @@
             background: transparent;
 
             pointer-events: auto;
-
-            box-shadow: none;
         }
 
 
@@ -297,6 +330,8 @@
             display: block;
 
             cursor: pointer;
+
+            -webkit-tap-highlight-color: transparent;
 
             background:
                 transparent !important;
@@ -346,7 +381,13 @@
 
             z-index: 100;
 
+            -webkit-backdrop-filter: blur(6px);
+
             backdrop-filter: blur(6px);
+
+            touch-action: manipulation;
+
+            -webkit-tap-highlight-color: transparent;
 
             transition:
                 background 0.2s ease,
@@ -354,12 +395,29 @@
         }
 
 
-        .close-btn:hover {
+        /* FIX: bigger invisible touch area (~44px) */
 
-            background:
-                rgba(0, 0, 0, 0.8);
+        .close-btn::after {
 
-            transform: scale(1.08);
+            content: "";
+
+            position: absolute;
+
+            inset: -9px;
+        }
+
+
+        /* FIX: hover only on devices with a mouse */
+
+        @media (hover: hover) {
+
+            .close-btn:hover {
+
+                background:
+                    rgba(0, 0, 0, 0.8);
+
+                transform: scale(1.08);
+            }
         }
 
 
@@ -378,30 +436,13 @@
             body {
 
                 padding-top: 15px;
-
-                padding-bottom: 34.7vw;
             }
 
 
-            /* Top */
+            /* Ads: full width on phones */
 
-            .top-ad {
-
-                width: 100vw;
-
-                height: 34.7vw;
-
-                border-radius: 0;
-            }
-
-
-            /* Bottom */
-
+            .top-ad,
             .bottom-ad {
-
-                width: 100vw;
-
-                height: 34.7vw;
 
                 border-radius: 0;
             }
@@ -473,6 +514,19 @@
                 font-size: 14px;
             }
         }
+
+
+        /* ========================================
+           PHONE LANDSCAPE
+        ======================================== */
+
+        @media (orientation: landscape) and (max-height: 500px) {
+
+            body {
+
+                padding-top: 8px;
+            }
+        }
     </style>
 
 </head>
@@ -482,7 +536,8 @@
 
     <!-- ========================================
          TOP FRAME
-         HIDDEN ON FIRST LOAD
+         HIDDEN ON FIRST OPEN
+         (SHOWS AFTER USER SCROLLS, THEN STAYS FIXED)
     ======================================== -->
 
     <div class="top-frame hide-top" id="top-frame">
@@ -494,9 +549,13 @@
 
 
 
-            <!-- TOP LOTTIE -->
 
-            <lottie-player src="./top/data2.json" background="transparent" speed="1" loop autoplay onclick="openAd()">
+
+            <!-- TOP LOTTIE
+                 FIX: no autoplay, it plays only while visible -->
+
+            <lottie-player id="top-player" src="./top/data2.json" background="transparent" speed="1" loop
+                onclick="openAd()">
             </lottie-player>
 
 
@@ -630,7 +689,7 @@
 
     <!-- ========================================
          BOTTOM FRAME
-         VISIBLE ON FIRST LOAD
+         VISIBLE ON FIRST OPEN (FIXED AT BOTTOM)
     ======================================== -->
 
     <div id="bottom-frame">
@@ -681,9 +740,12 @@
 
         function openAd() {
 
+            // FIX: noopener for security
+
             window.open(
                 clickTag,
-                "_blank"
+                "_blank",
+                "noopener"
             );
         }
 
@@ -693,71 +755,58 @@
         // VARIABLES
         // ========================================
 
-        let topAdClosed = false;
-
-        let lastScrollY =
-            window.pageYOffset ||
-            window.scrollY;
-
         let ticking = false;
 
-        // Ignore tiny movements (px)
+        // Show top ad after user scrolls this far (px)
 
-        const THRESHOLD = 12;
+        const SHOW_AFTER = 30;
+
+        // Hide top ad again when back near the top (px)
+
+        const HIDE_BELOW = 5;
+
+        // FIX: elements are cached once
+
+        const topFrame =
+            document.getElementById(
+                "top-frame"
+            );
+
+        const bottomFrame =
+            document.getElementById(
+                "bottom-frame"
+            );
+
+        const topPlayer =
+            document.getElementById(
+                "top-player"
+            );
 
 
 
         // ========================================
-        // PAGE LOAD
+        // TOP PLAYER PLAY / PAUSE (saves battery)
         // ========================================
 
-        document.addEventListener(
-            "DOMContentLoaded",
-            function () {
+        function setTopPlayer(play) {
 
-
-                const topFrame =
-                    document.getElementById(
-                        "top-frame"
-                    );
-
-
-                const bottomFrame =
-                    document.getElementById(
-                        "bottom-frame"
-                    );
-
-
-                // ====================================
-                // INITIAL STATE
-                // ====================================
-
-                // TOP = HIDDEN
-
-                if (topFrame) {
-
-                    topFrame.classList.add(
-                        "hide-top"
-                    );
-                }
-
-
-                // ====================================
-                // BOTTOM = VISIBLE
-                // ====================================
-
-                if (bottomFrame) {
-
-                    bottomFrame.classList.remove(
-                        "hide-bottom"
-                    );
-
-                    bottomFrame.style.display =
-                        "flex";
-                }
-
+            if (!topPlayer) {
+                return;
             }
-        );
+
+            try {
+
+                if (play) {
+                    topPlayer.play();
+                } else {
+                    topPlayer.pause();
+                }
+
+            } catch (e) {
+
+                // player not ready yet, ignore
+            }
+        }
 
 
 
@@ -790,23 +839,9 @@
             ticking = false;
 
 
-            const topFrame =
-                document.getElementById(
-                    "top-frame"
-                );
-
-
             // If top ad doesn't exist
 
             if (!topFrame) {
-                return;
-            }
-
-
-            // If user manually closed
-            // top ad, never show again
-
-            if (topAdClosed) {
                 return;
             }
 
@@ -815,121 +850,37 @@
                 window.pageYOffset ||
                 window.scrollY;
 
-            const maxY =
-                document.documentElement.scrollHeight -
-                window.innerHeight;
-
-
 
             // ====================================
-            // AT PAGE TOP
+            // USER SCROLLED: SHOW TOP AD
+            // (then it stays fixed at the top
+            //  while scrolling up and down)
             // ====================================
 
-            if (y <= 0) {
-
-                topFrame.classList.add(
-                    "hide-top"
-                );
-
-                lastScrollY = 0;
-
-                return;
-            }
-
-
-
-            // ====================================
-            // IGNORE RUBBER-BAND AT BOTTOM
-            // ====================================
-
-            if (y >= maxY - 2) {
-                return;
-            }
-
-
-
-            // ====================================
-            // IGNORE TINY MOVEMENTS
-            // ====================================
-
-            if (
-                Math.abs(y - lastScrollY) < THRESHOLD
-            ) {
-                return;
-            }
-
-
-
-            // ====================================
-            // SCROLLING DOWN
-            // ====================================
-
-            if (y > lastScrollY) {
+            if (y > SHOW_AFTER) {
 
                 topFrame.classList.remove(
                     "hide-top"
                 );
 
+                setTopPlayer(true);
+
             }
 
 
-
             // ====================================
-            // SCROLLING UP
+            // BACK AT PAGE TOP: HIDE TOP AD
+            // (only bottom is visible again)
             // ====================================
 
-            else {
+            else if (y <= HIDE_BELOW) {
 
                 topFrame.classList.add(
                     "hide-top"
                 );
 
-            }
+                setTopPlayer(false);
 
-
-
-            // Save scroll position
-
-            lastScrollY = y;
-
-        }
-
-
-
-        // ========================================
-        // CLOSE TOP AD
-        // ========================================
-
-        function closeTop(event) {
-
-
-            // Prevent the click from
-            // triggering the Lottie ad
-
-            event.stopPropagation();
-
-
-            // Permanently close top ad
-
-            topAdClosed = true;
-
-
-            const topFrame =
-                document.getElementById(
-                    "top-frame"
-                );
-
-
-            if (topFrame) {
-
-
-                topFrame.classList.add(
-                    "hide-top"
-                );
-
-
-                topFrame.style.display =
-                    "none";
             }
 
         }
@@ -949,12 +900,6 @@
             event.stopPropagation();
 
 
-            const bottomFrame =
-                document.getElementById(
-                    "bottom-frame"
-                );
-
-
             if (bottomFrame) {
 
 
@@ -969,11 +914,8 @@
                 setTimeout(
                     function () {
 
-                        if (bottomFrame) {
-
-                            bottomFrame.style.display =
-                                "none";
-                        }
+                        bottomFrame.style.display =
+                            "none";
 
                     },
                     350
@@ -984,7 +926,7 @@
             // Remove bottom spacing
 
             document.body.style.paddingBottom =
-                "20px";
+                "calc(20px + env(safe-area-inset-bottom, 0px))";
 
         }
 
