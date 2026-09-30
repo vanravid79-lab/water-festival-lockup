@@ -58,9 +58,8 @@
 
 
             /*
-                Initial state:
-                Top ad is hidden,
-                so we only need small top spacing.
+                Top ad overlays the page (no layout push),
+                so padding-top never changes while scrolling.
             */
 
             padding-top: 20px;
@@ -72,18 +71,15 @@
             padding-bottom: 260px;
 
 
+            /* FIX: stop scroll anchoring jumps on mobile */
+
+            overflow-anchor: none;
+
+
+            /* FIX: no padding-top transition anymore */
+
             transition:
-                padding-top 0.35s ease,
                 padding-bottom 0.35s ease;
-        }
-
-
-        /* ========================================
-           WHEN TOP AD IS VISIBLE
-        ======================================== */
-
-        body.top-ad-visible {
-            padding-top: 260px;
         }
 
 
@@ -108,7 +104,11 @@
 
             pointer-events: none;
 
-            transform: translateY(0);
+            /* FIX: GPU layer */
+
+            will-change: transform, opacity;
+
+            transform: translate3d(0, 0, 0);
 
             opacity: 1;
 
@@ -124,7 +124,7 @@
 
         .hide-top {
 
-            transform: translateY(-110%);
+            transform: translate3d(0, -110%, 0);
 
             opacity: 0;
         }
@@ -233,7 +233,11 @@
 
             pointer-events: none;
 
-            transform: translateY(0);
+            /* FIX: GPU layer */
+
+            will-change: transform, opacity;
+
+            transform: translate3d(0, 0, 0);
 
             opacity: 1;
 
@@ -249,7 +253,7 @@
 
         .hide-bottom {
 
-            transform: translateY(110%);
+            transform: translate3d(0, 110%, 0);
 
             opacity: 0;
         }
@@ -376,12 +380,6 @@
                 padding-top: 15px;
 
                 padding-bottom: 34.7vw;
-            }
-
-
-            body.top-ad-visible {
-
-                padding-top: 34.7vw;
             }
 
 
@@ -701,6 +699,12 @@
             window.pageYOffset ||
             window.scrollY;
 
+        let ticking = false;
+
+        // Ignore tiny movements (px)
+
+        const THRESHOLD = 12;
+
 
 
         // ========================================
@@ -738,11 +742,6 @@
                 }
 
 
-                document.body.classList.remove(
-                    "top-ad-visible"
-                );
-
-
                 // ====================================
                 // BOTTOM = VISIBLE
                 // ====================================
@@ -770,103 +769,130 @@
             "scroll",
             function () {
 
+                // Run once per animation frame
 
-                const topFrame =
-                    document.getElementById(
-                        "top-frame"
+                if (!ticking) {
+
+                    requestAnimationFrame(
+                        updateTopAd
                     );
 
-
-                // If top ad doesn't exist
-
-                if (!topFrame) {
-                    return;
+                    ticking = true;
                 }
 
-
-                // If user manually closed
-                // top ad, never show again
-
-                if (topAdClosed) {
-                    return;
-                }
+            },
+            { passive: true }
+        );
 
 
-                const currentScrollY =
-                    window.pageYOffset ||
-                    window.scrollY;
+        function updateTopAd() {
+
+            ticking = false;
 
 
-
-                // ====================================
-                // AT PAGE TOP
-                // ====================================
-
-                if (currentScrollY <= 0) {
+            const topFrame =
+                document.getElementById(
+                    "top-frame"
+                );
 
 
-                    topFrame.classList.add(
-                        "hide-top"
-                    );
+            // If top ad doesn't exist
+
+            if (!topFrame) {
+                return;
+            }
 
 
-                    document.body.classList.remove(
-                        "top-ad-visible"
-                    );
+            // If user manually closed
+            // top ad, never show again
 
-                }
-
-
-
-                // ====================================
-                // SCROLLING DOWN
-                // ====================================
-
-                else if (
-                    currentScrollY > lastScrollY
-                ) {
+            if (topAdClosed) {
+                return;
+            }
 
 
-                    topFrame.classList.remove(
-                        "hide-top"
-                    );
+            const y =
+                window.pageYOffset ||
+                window.scrollY;
 
-
-                    document.body.classList.add(
-                        "top-ad-visible"
-                    );
-
-                }
+            const maxY =
+                document.documentElement.scrollHeight -
+                window.innerHeight;
 
 
 
-                // ====================================
-                // SCROLLING UP
-                // ====================================
+            // ====================================
+            // AT PAGE TOP
+            // ====================================
 
-                else {
+            if (y <= 0) {
 
+                topFrame.classList.add(
+                    "hide-top"
+                );
 
-                    topFrame.classList.add(
-                        "hide-top"
-                    );
+                lastScrollY = 0;
 
-
-                    document.body.classList.remove(
-                        "top-ad-visible"
-                    );
-
-                }
+                return;
+            }
 
 
 
-                // Save scroll position
+            // ====================================
+            // IGNORE RUBBER-BAND AT BOTTOM
+            // ====================================
 
-                lastScrollY =
-                    currentScrollY;
+            if (y >= maxY - 2) {
+                return;
+            }
+
+
+
+            // ====================================
+            // IGNORE TINY MOVEMENTS
+            // ====================================
+
+            if (
+                Math.abs(y - lastScrollY) < THRESHOLD
+            ) {
+                return;
+            }
+
+
+
+            // ====================================
+            // SCROLLING DOWN
+            // ====================================
+
+            if (y > lastScrollY) {
+
+                topFrame.classList.remove(
+                    "hide-top"
+                );
 
             }
-        );
+
+
+
+            // ====================================
+            // SCROLLING UP
+            // ====================================
+
+            else {
+
+                topFrame.classList.add(
+                    "hide-top"
+                );
+
+            }
+
+
+
+            // Save scroll position
+
+            lastScrollY = y;
+
+        }
 
 
 
@@ -905,13 +931,6 @@
                 topFrame.style.display =
                     "none";
             }
-
-
-            // Remove top spacing
-
-            document.body.classList.remove(
-                "top-ad-visible"
-            );
 
         }
 
