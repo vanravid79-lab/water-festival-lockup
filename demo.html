@@ -5,8 +5,7 @@
 
     <meta charset="UTF-8" />
 
-    <!-- FIX: viewport-fit=cover for notched phones -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Demo Frame Screen</title>
 
@@ -21,10 +20,9 @@
 
     <!-- ========================================
          LOTTIE
-         FIX: pinned version + defer
     ======================================== -->
 
-    <script defer src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js">
     </script>
 
 
@@ -32,24 +30,6 @@
 
 
     <style>
-        /* ========================================
-           VARIABLES
-           Ad keeps 720:250 ratio and fits any phone
-           (portrait = width limit, landscape = height limit)
-        ======================================== */
-
-        :root {
-
-            --ad-h: min(250px, 34.7vw, 28vh);
-
-            --ad-w: calc(var(--ad-h) * 2.88);
-
-            --safe-top: env(safe-area-inset-top, 0px);
-
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
-
-
         /* ========================================
            GLOBAL RESET
         ======================================== */
@@ -63,8 +43,6 @@
 
         html {
             scroll-behavior: smooth;
-            -webkit-text-size-adjust: 100%;
-            text-size-adjust: 100%;
         }
 
 
@@ -89,17 +67,14 @@
 
             /*
                 Bottom ad is visible.
-                FIX: follows the real ad height + safe area.
             */
 
-            padding-bottom: calc(var(--ad-h) + var(--safe-bottom) + 12px);
+            padding-bottom: 260px;
 
 
             /* FIX: stop scroll anchoring jumps on mobile */
 
             overflow-anchor: none;
-
-            overflow-x: hidden;
 
 
             transition:
@@ -127,10 +102,6 @@
             z-index: 9999;
 
             pointer-events: none;
-
-            /* FIX: notch support */
-
-            padding-top: var(--safe-top);
 
             /* FIX: GPU layer */
 
@@ -166,9 +137,9 @@
 
             position: relative;
 
-            width: var(--ad-w);
+            width: 720px;
 
-            height: var(--ad-h);
+            height: 250px;
 
             overflow: hidden;
 
@@ -178,6 +149,8 @@
             background: transparent;
 
             pointer-events: auto;
+
+            box-shadow: none;
         }
 
 
@@ -201,6 +174,9 @@
 
             box-shadow:
                 0 6px 30px rgba(0, 0, 0, 0.05);
+
+            transition:
+                margin-top 0.35s ease;
         }
 
 
@@ -211,8 +187,6 @@
             line-height: 1.4;
 
             margin-bottom: 24px;
-
-            overflow-wrap: anywhere;
         }
 
 
@@ -221,8 +195,6 @@
             display: block;
 
             width: 100%;
-
-            height: auto;
 
             border-radius: 18px;
 
@@ -235,8 +207,6 @@
             margin-bottom: 20px;
 
             font-size: 17px;
-
-            overflow-wrap: anywhere;
         }
 
 
@@ -248,9 +218,7 @@
 
             position: fixed;
 
-            /* FIX: was -0.8rem (cropped the ad) */
-
-            bottom: 0;
+            bottom: -0.8rem;
 
             left: 0;
 
@@ -263,10 +231,6 @@
             z-index: 9999;
 
             pointer-events: none;
-
-            /* FIX: home indicator support */
-
-            padding-bottom: var(--safe-bottom);
 
             /* FIX: GPU layer */
 
@@ -302,9 +266,9 @@
 
             position: relative;
 
-            width: var(--ad-w);
+            width: 720px;
 
-            height: var(--ad-h);
+            height: 250px;
 
             overflow: hidden;
 
@@ -314,6 +278,8 @@
             background: transparent;
 
             pointer-events: auto;
+
+            box-shadow: none;
         }
 
 
@@ -330,8 +296,6 @@
             display: block;
 
             cursor: pointer;
-
-            -webkit-tap-highlight-color: transparent;
 
             background:
                 transparent !important;
@@ -381,13 +345,7 @@
 
             z-index: 100;
 
-            -webkit-backdrop-filter: blur(6px);
-
             backdrop-filter: blur(6px);
-
-            touch-action: manipulation;
-
-            -webkit-tap-highlight-color: transparent;
 
             transition:
                 background 0.2s ease,
@@ -395,29 +353,12 @@
         }
 
 
-        /* FIX: bigger invisible touch area (~44px) */
+        .close-btn:hover {
 
-        .close-btn::after {
+            background:
+                rgba(0, 0, 0, 0.8);
 
-            content: "";
-
-            position: absolute;
-
-            inset: -9px;
-        }
-
-
-        /* FIX: hover only on devices with a mouse */
-
-        @media (hover: hover) {
-
-            .close-btn:hover {
-
-                background:
-                    rgba(0, 0, 0, 0.8);
-
-                transform: scale(1.08);
-            }
+            transform: scale(1.08);
         }
 
 
@@ -436,13 +377,30 @@
             body {
 
                 padding-top: 15px;
+
+                padding-bottom: 34.7vw;
             }
 
 
-            /* Ads: full width on phones */
+            /* Top */
 
-            .top-ad,
+            .top-ad {
+
+                width: 100vw;
+
+                height: 34.7vw;
+
+                border-radius: 0;
+            }
+
+
+            /* Bottom */
+
             .bottom-ad {
+
+                width: 100vw;
+
+                height: 34.7vw;
 
                 border-radius: 0;
             }
@@ -514,19 +472,6 @@
                 font-size: 14px;
             }
         }
-
-
-        /* ========================================
-           PHONE LANDSCAPE
-        ======================================== */
-
-        @media (orientation: landscape) and (max-height: 500px) {
-
-            body {
-
-                padding-top: 8px;
-            }
-        }
     </style>
 
 </head>
@@ -551,11 +496,9 @@
 
 
 
-            <!-- TOP LOTTIE
-                 FIX: no autoplay, it plays only while visible -->
+            <!-- TOP LOTTIE -->
 
-            <lottie-player id="top-player" src="./top/data2.json" background="transparent" speed="1" loop
-                onclick="openAd()">
+            <lottie-player src="./top/data2.json" background="transparent" speed="1" loop autoplay onclick="openAd()">
             </lottie-player>
 
 
@@ -740,12 +683,9 @@
 
         function openAd() {
 
-            // FIX: noopener for security
-
             window.open(
                 clickTag,
-                "_blank",
-                "noopener"
+                "_blank"
             );
         }
 
@@ -754,6 +694,8 @@
         // ========================================
         // VARIABLES
         // ========================================
+
+        let topAdClosed = false;
 
         let ticking = false;
 
@@ -765,48 +707,57 @@
 
         const HIDE_BELOW = 5;
 
-        // FIX: elements are cached once
-
-        const topFrame =
-            document.getElementById(
-                "top-frame"
-            );
-
-        const bottomFrame =
-            document.getElementById(
-                "bottom-frame"
-            );
-
-        const topPlayer =
-            document.getElementById(
-                "top-player"
-            );
-
 
 
         // ========================================
-        // TOP PLAYER PLAY / PAUSE (saves battery)
+        // PAGE LOAD
         // ========================================
 
-        function setTopPlayer(play) {
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
 
-            if (!topPlayer) {
-                return;
-            }
 
-            try {
+                const topFrame =
+                    document.getElementById(
+                        "top-frame"
+                    );
 
-                if (play) {
-                    topPlayer.play();
-                } else {
-                    topPlayer.pause();
+
+                const bottomFrame =
+                    document.getElementById(
+                        "bottom-frame"
+                    );
+
+
+                // ====================================
+                // FIRST OPEN: TOP = HIDDEN
+                // ====================================
+
+                if (topFrame) {
+
+                    topFrame.classList.add(
+                        "hide-top"
+                    );
                 }
 
-            } catch (e) {
 
-                // player not ready yet, ignore
+                // ====================================
+                // FIRST OPEN: BOTTOM = VISIBLE
+                // ====================================
+
+                if (bottomFrame) {
+
+                    bottomFrame.classList.remove(
+                        "hide-bottom"
+                    );
+
+                    bottomFrame.style.display =
+                        "flex";
+                }
+
             }
-        }
+        );
 
 
 
@@ -839,9 +790,23 @@
             ticking = false;
 
 
+            const topFrame =
+                document.getElementById(
+                    "top-frame"
+                );
+
+
             // If top ad doesn't exist
 
             if (!topFrame) {
+                return;
+            }
+
+
+            // If user manually closed
+            // top ad, never show again
+
+            if (topAdClosed) {
                 return;
             }
 
@@ -863,8 +828,6 @@
                     "hide-top"
                 );
 
-                setTopPlayer(true);
-
             }
 
 
@@ -879,8 +842,59 @@
                     "hide-top"
                 );
 
-                setTopPlayer(false);
+            }
 
+        }
+
+
+
+        // ========================================
+        // CLOSE TOP AD
+        // ========================================
+
+        function closeTop(event) {
+
+
+            // Prevent the click from
+            // triggering the Lottie ad
+
+            event.stopPropagation();
+
+
+            // Permanently close top ad
+
+            topAdClosed = true;
+
+
+            const topFrame =
+                document.getElementById(
+                    "top-frame"
+                );
+
+
+            if (topFrame) {
+
+
+                topFrame.classList.add(
+                    "hide-top"
+                );
+
+
+                // Wait for animation,
+                // then completely remove it
+
+                setTimeout(
+                    function () {
+
+                        if (topFrame) {
+
+                            topFrame.style.display =
+                                "none";
+                        }
+
+                    },
+                    350
+                );
             }
 
         }
@@ -900,6 +914,12 @@
             event.stopPropagation();
 
 
+            const bottomFrame =
+                document.getElementById(
+                    "bottom-frame"
+                );
+
+
             if (bottomFrame) {
 
 
@@ -914,8 +934,11 @@
                 setTimeout(
                     function () {
 
-                        bottomFrame.style.display =
-                            "none";
+                        if (bottomFrame) {
+
+                            bottomFrame.style.display =
+                                "none";
+                        }
 
                     },
                     350
@@ -926,7 +949,7 @@
             // Remove bottom spacing
 
             document.body.style.paddingBottom =
-                "calc(20px + env(safe-area-inset-bottom, 0px))";
+                "20px";
 
         }
 
