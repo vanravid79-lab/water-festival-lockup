@@ -58,9 +58,8 @@
 
 
             /*
-                Top ad is hidden on first open
-                and only overlays the page after scrolling,
-                so only small top spacing is needed.
+                Top ad overlays the page (no layout push),
+                so padding-top never changes while scrolling.
             */
 
             padding-top: 20px;
@@ -76,6 +75,8 @@
 
             overflow-anchor: none;
 
+
+            /* FIX: no padding-top transition anymore */
 
             transition:
                 padding-bottom 0.35s ease;
@@ -481,8 +482,7 @@
 
     <!-- ========================================
          TOP FRAME
-         HIDDEN ON FIRST OPEN
-         (SHOWS AFTER USER SCROLLS, THEN STAYS FIXED)
+         HIDDEN ON FIRST LOAD
     ======================================== -->
 
     <div class="top-frame hide-top" id="top-frame">
@@ -491,8 +491,6 @@
 
 
             <!-- TOP CLOSE BUTTON -->
-
-
 
 
 
@@ -632,7 +630,7 @@
 
     <!-- ========================================
          BOTTOM FRAME
-         VISIBLE ON FIRST OPEN (FIXED AT BOTTOM)
+         VISIBLE ON FIRST LOAD
     ======================================== -->
 
     <div id="bottom-frame">
@@ -697,15 +695,15 @@
 
         let topAdClosed = false;
 
+        let lastScrollY =
+            window.pageYOffset ||
+            window.scrollY;
+
         let ticking = false;
 
-        // Show top ad after user scrolls this far (px)
+        // Ignore tiny movements (px)
 
-        const SHOW_AFTER = 30;
-
-        // Hide top ad again when back near the top (px)
-
-        const HIDE_BELOW = 5;
+        const THRESHOLD = 12;
 
 
 
@@ -731,8 +729,10 @@
 
 
                 // ====================================
-                // FIRST OPEN: TOP = HIDDEN
+                // INITIAL STATE
                 // ====================================
+
+                // TOP = HIDDEN
 
                 if (topFrame) {
 
@@ -743,7 +743,7 @@
 
 
                 // ====================================
-                // FIRST OPEN: BOTTOM = VISIBLE
+                // BOTTOM = VISIBLE
                 // ====================================
 
                 if (bottomFrame) {
@@ -815,14 +815,56 @@
                 window.pageYOffset ||
                 window.scrollY;
 
+            const maxY =
+                document.documentElement.scrollHeight -
+                window.innerHeight;
+
+
 
             // ====================================
-            // USER SCROLLED: SHOW TOP AD
-            // (then it stays fixed at the top
-            //  while scrolling up and down)
+            // AT PAGE TOP
             // ====================================
 
-            if (y > SHOW_AFTER) {
+            if (y <= 0) {
+
+                topFrame.classList.add(
+                    "hide-top"
+                );
+
+                lastScrollY = 0;
+
+                return;
+            }
+
+
+
+            // ====================================
+            // IGNORE RUBBER-BAND AT BOTTOM
+            // ====================================
+
+            if (y >= maxY - 2) {
+                return;
+            }
+
+
+
+            // ====================================
+            // IGNORE TINY MOVEMENTS
+            // ====================================
+
+            if (
+                Math.abs(y - lastScrollY) < THRESHOLD
+            ) {
+                return;
+            }
+
+
+
+            // ====================================
+            // SCROLLING DOWN
+            // ====================================
+
+            if (y > lastScrollY) {
 
                 topFrame.classList.remove(
                     "hide-top"
@@ -831,18 +873,24 @@
             }
 
 
+
             // ====================================
-            // BACK AT PAGE TOP: HIDE TOP AD
-            // (only bottom is visible again)
+            // SCROLLING UP
             // ====================================
 
-            else if (y <= HIDE_BELOW) {
+            else {
 
                 topFrame.classList.add(
                     "hide-top"
                 );
 
             }
+
+
+
+            // Save scroll position
+
+            lastScrollY = y;
 
         }
 
@@ -880,21 +928,8 @@
                 );
 
 
-                // Wait for animation,
-                // then completely remove it
-
-                setTimeout(
-                    function () {
-
-                        if (topFrame) {
-
-                            topFrame.style.display =
-                                "none";
-                        }
-
-                    },
-                    350
-                );
+                topFrame.style.display =
+                    "none";
             }
 
         }
