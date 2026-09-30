@@ -237,13 +237,16 @@
                 left: 0;
                 right: 0;
                 width: 100%;
-                bottom: 0;
+                bottom: -4rem;
+                /* Forces it completely to the screen bottom */
             }
 
             .bottom-ad {
                 width: 100%;
-                height: 34.7vw;
+                height: 250px;
+                /* Give it a fixed, reliable mobile height instead of pure vw if Lottie squishes */
                 border-radius: 0;
+                /* Removes rounded corners so it sits flush edge-to-edge */
             }
 
             /* Content */
