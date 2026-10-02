@@ -318,6 +318,78 @@
                 font-size: 14px;
             }
         }
+
+        /* ========================================
+            CLEAN BOTTOM FRAME
+        ======================================== */
+
+        /* Keep the page content from hiding behind the ad */
+        body {
+            padding-bottom: 270px;
+        }
+
+        #bottom-frame {
+            bottom: 0;
+        }
+
+        .bottom-ad {
+            aspect-ratio: 720 / 250;
+            /* ad keeps its shape, never stretched or cropped */
+            height: auto;
+            margin-bottom: 0;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Small, quiet close button with a big invisible tap area */
+        .close-btn {
+            top: 8px;
+            right: 8px;
+            width: 26px;
+            height: 26px;
+            font-size: 13px;
+            background: rgba(0, 0, 0, 0.55);
+        }
+
+        .close-btn::after {
+            content: "";
+            position: absolute;
+            inset: -9px;
+            /* 44px touch target */
+        }
+
+        .close-btn:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 720px) {
+
+            body {
+                padding-bottom: calc(34.7vw + 16px);
+                /* matches ad height */
+            }
+
+            .bottom-ad {
+                width: 100%;
+                height: auto;
+                margin-bottom: 0;
+                border-radius: 0;
+            }
+
+            .close-btn {
+                top: 6px;
+                right: 6px;
+                width: 26px;
+                height: 26px;
+                font-size: 13px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #bottom-frame {
+                transition: none;
+            }
+        }
     </style>
 </head>
 
@@ -418,22 +490,17 @@
          VISIBLE ON FIRST LOAD
     ======================================== -->
     <div id="bottom-frame">
-
         <div class="bottom-ad">
 
-            <!-- BOTTOM CLOSE BUTTON -->
-            <button class="close-btn" type="button" onclick="closeBottom(event)"
-                aria-label="Close bottom advertisement">
-                ✕
+            <button class="close-btn" type="button" onclick="closeBottom(event)" aria-label="Close advertisement">
+                <span aria-hidden="true">✕</span>
             </button>
 
-            <!-- BOTTOM LOTTIE -->
-            <lottie-player src="./bottom/data11.json" background="transparent" speed="1" loop autoplay
-                onclick="openAd()">
+            <lottie-player src="./bottom/data11.json" background="transparent" speed="1" loop autoplay role="link"
+                aria-label="Open advertisement" onclick="openAd()">
             </lottie-player>
 
         </div>
-
     </div>
 
 
