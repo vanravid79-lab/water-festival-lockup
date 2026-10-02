@@ -403,6 +403,37 @@
             padding-bottom: env(safe-area-inset-bottom, 0px);
             /* iPhone home bar */
         }
+
+        /* ========================================
+            SMOOTH SCROLLING + SMOOTH FRAMES
+        ======================================== */
+        #bottom-frame,
+        .top-frame {
+            translate: none;
+            /* no JS offsets, browser keeps it pinned */
+            contain: layout style;
+            backface-visibility: hidden;
+            transition:
+                transform 0.45s cubic-bezier(0.22, 0.8, 0.3, 1),
+                opacity 0.35s ease;
+        }
+
+        /* blur behind the button is expensive while content scrolls under it */
+        .close-btn {
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        /* smooth anchor jumps only; real finger scrolling stays native */
+        html {
+            scroll-behavior: auto;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            -webkit-overflow-scrolling: touch;
+        }
     </style>
 </head>
 
@@ -1544,41 +1575,6 @@
             }, 2100);
 
         }
-
-
-        /* ========================================
-            LOCK BOTTOM FRAME TO VISIBLE SCREEN
-        ======================================== */
-        (function () {
-
-            const frame = document.getElementById("bottom-frame");
-            const vv = window.visualViewport;
-
-            if (!frame || !vv) return;
-
-            let raf = null;
-
-            function sync() {
-                raf = null;
-
-                /* how far the visible screen bottom is above the layout bottom */
-                const offset = window.innerHeight - (vv.height + vv.offsetTop);
-
-                /* "translate" does not clash with your hide-bottom transform */
-                frame.style.translate = "0 " + (-Math.max(0, offset)) + "px";
-            }
-
-            function request() {
-                if (raf === null) raf = requestAnimationFrame(sync);
-            }
-
-            vv.addEventListener("resize", request);
-            vv.addEventListener("scroll", request);
-            window.addEventListener("scroll", request, { passive: true });
-
-            sync();
-
-        })();
 
     </script>
 
