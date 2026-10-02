@@ -227,6 +227,12 @@
         ======================================== */
         @media (max-width: 720px) {
 
+            /* NEW: stop the rubber-band bounce that makes fixed elements wobble */
+            html,
+            body {
+                overscroll-behavior-y: none;
+            }
+
             body {
                 margin: 0;
                 padding-top: 15px;
@@ -255,13 +261,20 @@
                 left: 0;
                 right: 0;
                 width: 100%;
-                bottom: -70px;
+                bottom: 0;
+                /* CHANGED: was -70px */
             }
 
             .bottom-ad {
                 width: 100%;
                 height: 250px;
                 border-radius: 0;
+                margin-bottom: -70px;
+                /* NEW: keeps your old -70px look */
+                transform: translateZ(0);
+                /* NEW: own GPU layer, no repaint shake */
+                -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
             }
 
             .content {
