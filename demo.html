@@ -434,6 +434,31 @@
         body {
             -webkit-overflow-scrolling: touch;
         }
+
+        /* ========================================
+            STATIC BOTTOM FRAME
+            The page scrolls inside <body>, not the browser window,
+            so the browser toolbars never resize and the frame never moves.
+        ======================================== */
+        html {
+            height: 100%;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        body {
+            height: 100%;
+            height: 100dvh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            overscroll-behavior-y: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #bottom-frame {
+            position: fixed;
+            bottom: 0;
+        }
     </style>
 </head>
 
@@ -1575,6 +1600,57 @@
             }, 2100);
 
         }
+
+
+        /* ========================================
+            TOP FRAME: SAME LOGIC, BUT READS THE BODY SCROLL
+        ======================================== */
+        (function () {
+
+            const scroller = document.body;
+            let last = 0;
+            let busy = false;
+
+            scroller.addEventListener("scroll", function () {
+
+                if (busy) return;
+
+                busy = true;
+
+                requestAnimationFrame(function () {
+
+                    busy = false;
+
+                    const topFrame = document.getElementById("top-frame");
+
+                    if (!topFrame || topAdClosed) return;
+
+                    const y = scroller.scrollTop;
+                    const maxY = scroller.scrollHeight - scroller.clientHeight;
+
+                    if (y <= 0) {
+                        topFrame.classList.add("hide-top");
+                        last = 0;
+                        return;
+                    }
+
+                    if (y >= maxY - 2) return;
+
+                    if (Math.abs(y - last) < THRESHOLD) return;
+
+                    if (y > last) {
+                        topFrame.classList.remove("hide-top");
+                    } else {
+                        topFrame.classList.add("hide-top");
+                    }
+
+                    last = y;
+
+                });
+
+            }, { passive: true });
+
+        })();
 
     </script>
 
