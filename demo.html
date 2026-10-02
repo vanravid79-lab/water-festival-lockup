@@ -167,7 +167,7 @@
             height: 250px;
             overflow: hidden;
             border-radius: 18px 18px 0 0;
-            background: transparent;
+
             pointer-events: auto;
             box-shadow: none;
         }
@@ -337,7 +337,7 @@
             /* ad keeps its shape, never stretched or cropped */
             height: auto;
             margin-bottom: 0;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+
         }
 
         /* Small, quiet close button with a big invisible tap area */
@@ -561,7 +561,8 @@
     <div id="bottom-frame">
         <div class="bottom-ad">
 
-            <button class="close-btn" type="button" onclick="closeBottom(event)" aria-label="Close advertisement">
+            <button style="margin-top: 2rem;" class="close-btn" type="button" onclick="closeBottom(event)"
+                aria-label="Close advertisement">
                 <span aria-hidden="true">✕</span>
             </button>
 
@@ -1653,7 +1654,6 @@
         })();
 
     </script>
-
 </body>
 
 </html>
