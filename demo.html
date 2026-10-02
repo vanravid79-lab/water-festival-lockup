@@ -390,6 +390,19 @@
                 transition: none;
             }
         }
+
+        /* ========================================
+            KEEP BOTTOM FRAME ON SCREEN BOTTOM
+        ======================================== */
+        #bottom-frame {
+            position: fixed;
+            top: auto;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            /* iPhone home bar */
+        }
     </style>
 </head>
 
@@ -497,7 +510,7 @@
             </button>
 
             <lottie-player src="./bottom/data11.json" background="transparent" speed="1" loop autoplay role="link"
-                aria-label="Open advertisement" onclick="openAd()">
+                aria-label="Open advertisement" preserveAspectRatio="xMidYMax meet" onclick="openAd()">
             </lottie-player>
 
         </div>
@@ -1531,6 +1544,41 @@
             }, 2100);
 
         }
+
+
+        /* ========================================
+            LOCK BOTTOM FRAME TO VISIBLE SCREEN
+        ======================================== */
+        (function () {
+
+            const frame = document.getElementById("bottom-frame");
+            const vv = window.visualViewport;
+
+            if (!frame || !vv) return;
+
+            let raf = null;
+
+            function sync() {
+                raf = null;
+
+                /* how far the visible screen bottom is above the layout bottom */
+                const offset = window.innerHeight - (vv.height + vv.offsetTop);
+
+                /* "translate" does not clash with your hide-bottom transform */
+                frame.style.translate = "0 " + (-Math.max(0, offset)) + "px";
+            }
+
+            function request() {
+                if (raf === null) raf = requestAnimationFrame(sync);
+            }
+
+            vv.addEventListener("resize", request);
+            vv.addEventListener("scroll", request);
+            window.addEventListener("scroll", request, { passive: true });
+
+            sync();
+
+        })();
 
     </script>
 
